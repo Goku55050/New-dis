@@ -78,6 +78,8 @@ class MyBot(commands.Bot):
         super().__init__(command_prefix=PREFIX, intents=intents)
         self.spam_channel = None
         self.all_bots = []   # will be filled after creation
+        # Remove the default help command to avoid conflict
+        self.remove_command('help')
 
     async def on_ready(self):
         print(f'✅ Logged in as {self.user.name} (ID: {self.user.id})')
