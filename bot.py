@@ -2,8 +2,30 @@ import discord
 from discord.ext import commands
 import asyncio
 import os
+from flask import Flask
+import threading
 
-# --- CONFIGURATION ---
+# --- FLASK WEB SERVER FOR UPTIME MONITORING ---
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "✅ Discord Bot is running 24/7!"
+
+@app.route('/health')
+def health():
+    return "OK", 200
+
+def run_web_server():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    server = threading.Thread(target=run_web_server)
+    server.daemon = True
+    server.start()
+    print("🌐 Web server started on port 8080")
+
+# --- DISCORD BOT CONFIGURATION ---
 # Get tokens from environment variables
 TOKENS = os.getenv('DISCORD_TOKENS', '').split(',')
 # Remove any empty strings
@@ -26,17 +48,21 @@ class MyBot(commands.Bot):
     async def on_ready(self):
         print(f'✅ Logged in as {self.user.name}')
         print(f'🔒 Authorized Owner IDs: {MY_OWNER_IDS}')
+        print(f'📡 Bot ID: {self.user.id}')
         print(f'--- {self.user.name} is online and ready ---')
 
     async def setup_hook(self):
         # Add commands to this specific instance
         self.add_command(blast)
         self.add_command(stop)
+        self.add_command(status)
+        self.add_command(ping)
 
 @commands.command()
 async def blast(ctx, delay: int, *, target: str):
     # SECURITY CHECK: Only authorized IDs can trigger this
     if ctx.author.id not in MY_OWNER_IDS:
+        await ctx.send("❌ You are not authorized to use this command!")
         return
 
     if ctx.bot.is_blasting:
@@ -46,16 +72,16 @@ async def blast(ctx, delay: int, *, target: str):
     ctx.bot.is_blasting = True
     
     messages = [
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤣_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🤣{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤣_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🤣{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤣_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🤣{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤣_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🤣{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤣_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．",
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😍_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😍{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😍_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😍{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😍_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😍{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😍_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．",
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥵_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🥵{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥵_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🥵{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥵_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　_🥵{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥵_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🥵{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥵_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．",
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😡_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😡{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😡_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😡{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😡_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😡{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😡_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😡{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😡_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．",
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😝_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😝{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😝_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😝{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😝_　　　　　_😝{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😝_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😝{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😝_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．",
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥳_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　_　　　　　　　_　　　　　_🥳{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥳_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🥳{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥳_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🥳{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥳_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🥳{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥳_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．",
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😭_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😭{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😭_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😭{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😭_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😭{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😭_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_😭{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😭_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．",
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄💀_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_💀{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄💀_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_💀{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄💀_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_💀{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄💀_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_💀{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄💀_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．",
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤯_　　　　　　　_　　　　　_🤯{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤯_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🤯{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤯_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🤯{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤯_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🤯{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤯_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．",
-        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🔥_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🔥{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🔥_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🔥{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🔥_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🔥{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🔥_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　　　　　．　　　　　　　　．　　　　　　　　．　　　　　　．　　　　．　　　　．　　　．　　　　　　．　　　　　_　　　　　　　_　　　　　_🔥{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🔥_　　　　　　　_　　　　　　　_　　　　　　　　　．　　　　　        .                 .       　𝐒𝐜𝐫𝐢𝐩𝐭 𝐁𝐲 𝐀𝐫𝐞𝐬 𝐃𝐚𝐝𝐝𝐲🔥．"
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤣",
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😍",
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥵",
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😡",
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😝",
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🥳",
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄😭",
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄💀",
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🤯",
+        f"{target} 　𝐂𝐇𝐀𝐋　𝐁𝐇𝐀𝐆　𝐌𝐓　𝐂𝐇𝐈𝐍𝐀𝐋　𝐊𝐄　𝐁𝐀𝐂𝐇𝐄🔥"
     ]
 
     await ctx.send(f"🚀 **[{ctx.bot.user.name}] Infinite Loop Started** for **{target}** with a {delay}s delay. Type `!stop` to end.")
@@ -80,6 +106,7 @@ async def blast(ctx, delay: int, *, target: str):
 async def stop(ctx):
     # SECURITY CHECK: Only authorized IDs can stop it
     if ctx.author.id not in MY_OWNER_IDS:
+        await ctx.send("❌ You are not authorized to use this command!")
         return
 
     if not ctx.bot.is_blasting:
@@ -88,16 +115,48 @@ async def stop(ctx):
         ctx.bot.is_blasting = False
         await ctx.send(f"🛑 [{ctx.bot.user.name}] Turning off the blast... please wait for the current cycle to end.")
 
+@commands.command()
+async def status(ctx):
+    """Check bot status and latency"""
+    if ctx.author.id not in MY_OWNER_IDS:
+        return
+    
+    embed = discord.Embed(
+        title="🤖 Bot Status",
+        color=discord.Color.green()
+    )
+    embed.add_field(name="Status", value="✅ Online", inline=True)
+    embed.add_field(name="Latency", value=f"{round(ctx.bot.latency * 1000)}ms", inline=True)
+    embed.add_field(name="Blasting", value="Yes" if ctx.bot.is_blasting else "No", inline=True)
+    await ctx.send(embed=embed)
+
+@commands.command()
+async def ping(ctx):
+    """Simple ping command to keep bot alive"""
+    if ctx.author.id not in MY_OWNER_IDS:
+        return
+    await ctx.send(f"Pong! 🏓 ({round(ctx.bot.latency * 1000)}ms)")
+
 async def main():
+    print("=" * 50)
+    print("🤖 Discord Multi-Bot Starting...")
+    print("=" * 50)
+    
     if not TOKENS:
-        print("ERROR: No Discord tokens found! Please set DISCORD_TOKENS environment variable.")
+        print("❌ ERROR: No Discord tokens found! Please set DISCORD_TOKENS environment variable.")
         return
     
     if not MY_OWNER_IDS:
-        print("ERROR: No owner IDs found! Please set OWNER_IDS environment variable.")
+        print("❌ ERROR: No owner IDs found! Please set OWNER_IDS environment variable.")
         return
     
-    print(f"Starting {len(TOKENS)} bot(s)...")
+    print(f"📝 Loaded {len(TOKENS)} bot token(s)")
+    print(f"👑 Authorized Owner IDs: {MY_OWNER_IDS}")
+    print("=" * 50)
+    
+    # Start web server for uptime monitoring
+    keep_alive()
+    
     # Create instances for all tokens
     bot_instances = [MyBot(command_prefix=PREFIX, intents=intents) for _ in TOKENS]
     
@@ -109,4 +168,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("Shutting down...")
+        print("\n🛑 Shutting down...")
