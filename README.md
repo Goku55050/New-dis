@@ -1,4 +1,3 @@
-```markdown
 # Discord Multi‑Bot Spammer 🚀
 
 A powerful Discord bot that supports **multiple bot tokens** running simultaneously, with a **parallel spam command** where all bots send **different messages at the same time** (fixed 1‑second delay). Includes advanced moderation commands and a built‑in Flask web server for 24/7 uptime on Render.
